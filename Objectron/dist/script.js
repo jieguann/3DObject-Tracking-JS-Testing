@@ -254,4 +254,27 @@ function arctan360(x, y) {
 //get the result
 function getDetectionResult(result){
     console.log(result);
-  }
+    client.publish('ACELab/3DTracking', JSON.stringify(result), { qos: 0, retain: false });
+}
+
+////Code for MQTT
+const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
+
+ //const host = 'wss://mqtt.eclipseprojects.io:443/mqtt'
+const host = 'wss://test.mosquitto.org:8081/mqtt'
+
+console.log('Connecting mqtt client')
+const client = mqtt.connect(host)
+
+client.on('error', (err) => {
+console.log('Connection error: ', err)
+client.end()
+})
+
+client.on('reconnect', () => {
+console.log('Reconnecting...')
+})
+
+client.on('message', (topic, message, packet) => {
+  console.log('Received Message: ' + message.toString() + '\nOn topic: ' + topic)
+})
