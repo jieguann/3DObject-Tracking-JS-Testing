@@ -1,4 +1,5 @@
 import DeviceDetector from "https://cdn.skypack.dev/device-detector-js@2.2.10";
+
 // Usage: testSupport({client?: string, os?: string}[])
 // Client and os are regular expressions.
 // See: https://cdn.jsdelivr.net/npm/device-detector-js@2.2.10/README.md for
@@ -34,6 +35,7 @@ function testSupport(supportedDevices) {
 const controls = window;
 const drawingUtils = window;
 const mpObjectron = window;
+const { BACK_BOTTOM_RIGHT, BACK_TOP_LEFT, BACK_TOP_RIGHT, FRONT_BOTTOM_LEFT, FRONT_BOTTOM_RIGHT, FRONT_TOP_RIGHT, FRONT_TOP_LEFT, CENTER } = mpObjectron.BOX_KEYPOINTS;
 const config = { locateFile: (file) => {
         return `https://cdn.jsdelivr.net/npm/@mediapipe/objectron@0.3.1627447724/${file}`;
     } };
@@ -82,9 +84,11 @@ function onResults(results) {
     canvasCtx.save();
     canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
     if (!!results.objectDetections) {
+        
         for (const detectedObject of results.objectDetections) {
             // Reformat keypoint information as landmarks, for easy drawing.
             const landmarks = detectedObject.keypoints.map(x => x.point2d);
+            const landmarks3D = detectedObject.keypoints.map(x => x.point3d);
             // Draw bounding box.
             drawingUtils.drawConnectors(canvasCtx, landmarks, mpObjectron.BOX_CONNECTIONS, { color: '#FF0000' });
             // Draw Axes
@@ -95,6 +99,9 @@ function onResults(results) {
             });
             // Draw centroid.
             drawingUtils.drawLandmarks(canvasCtx, [landmarks[0]], { color: '#FFFFFF' });
+            
+            //MQTT of the result
+            getDetectionResult(landmarks3D[CENTER]);
         }
     }
     canvasCtx.restore();
@@ -142,6 +149,10 @@ new controls
         field: 'modelName',
         options: [
             {
+                name: 'Cup',
+                value: 'Cup',
+            },
+            {
                 name: 'Shoe',
                 value: 'Shoe',
             },
@@ -153,10 +164,7 @@ new controls
                 name: 'Chair',
                 value: 'Chair',
             },
-            {
-                name: 'Cup',
-                value: 'Cup',
-            },
+            
         ]
     }),
     new controls.Slider({
@@ -184,7 +192,7 @@ new controls
     objectron.setOptions(options);
 });
 function drawAxes(canvasCtx, landmarks, color) {
-    const { BACK_BOTTOM_RIGHT, BACK_TOP_LEFT, BACK_TOP_RIGHT, FRONT_BOTTOM_LEFT, FRONT_BOTTOM_RIGHT, FRONT_TOP_RIGHT, FRONT_TOP_LEFT, CENTER } = mpObjectron.BOX_KEYPOINTS;
+    
     const xMidPoint = lineIntersection([landmarks[BACK_BOTTOM_RIGHT], landmarks[FRONT_TOP_RIGHT]], [landmarks[BACK_TOP_RIGHT], landmarks[FRONT_BOTTOM_RIGHT]]);
     const yMidPoint = lineIntersection([landmarks[BACK_TOP_LEFT], landmarks[FRONT_TOP_RIGHT]], [landmarks[FRONT_TOP_LEFT], landmarks[BACK_TOP_RIGHT]]);
     const zMidPoint = lineIntersection([landmarks[FRONT_TOP_RIGHT], landmarks[FRONT_BOTTOM_LEFT]], [landmarks[FRONT_TOP_LEFT], landmarks[FRONT_BOTTOM_RIGHT]]);
@@ -242,3 +250,8 @@ function arctan360(x, y) {
     }
     return y >= 0 ? (angle + Math.PI) : angle - Math.PI;
 }
+
+//get the result
+function getDetectionResult(result){
+    console.log(result);
+  }
