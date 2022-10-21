@@ -261,7 +261,7 @@ function getDetectionResult(result){
 const clientId = 'mqttjs_' + Math.random().toString(16).substr(2, 8)
 
  //const host = 'wss://mqtt.eclipseprojects.io:443/mqtt'
-const host = 'wss://test.mosquitto.org:8081/mqtt'
+const host = 'ws://test.mosquitto.org:8080/mqtt'
 
 console.log('Connecting mqtt client')
 const client = mqtt.connect(host)
